@@ -4,6 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import MainRoutes from './Routes/MainRoutes'
 import NavbarForAll from './Components/Nav'
+import { ToastContainer } from 'react-toastify'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -12,6 +13,7 @@ function App() {
     <>
     <NavbarForAll/>
     <MainRoutes/>
+    <ToastContainer/>
     </>
   )
 }

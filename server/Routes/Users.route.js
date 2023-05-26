@@ -57,6 +57,7 @@ userRouter.post("/login", async (req, res) => {
             username: user[0].email,
             id: user[0]._id,
             funds: user[0].funds,
+            role: user[0].role,
           });
         } else {
           res.status(404).send({ msg: "wrongcred" });

@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Spinner from 'react-bootstrap/Spinner';
+import { Navigate, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Accounts = () => {
   const [accountsData,setAccountsData]=useState([]);
   const [loading,setLoading]=useState(false);
   // console.log(process.env.REACT_APP_API)
+  const userdata = useSelector((store) => store.AuthReducer.userData);
+  const navigate=useNavigate();
 
   useEffect(()=>{
+    if(userdata===""||userdata.role!=="banker"){
+      return navigate("/")
+    }
     setLoading(true)
       fetch(`${import.meta.env.VITE_SOME_KEY}accounts`).then((res)=>{
         return res.json()
@@ -42,9 +49,17 @@ const Accounts = () => {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>1</td>
-          </tr>
+          {accountsData.map((el,index)=>{
+               return(
+                <tr>
+                <td>{index+1}</td>
+                <td>{el.trans_date}</td>
+                <td>{el.amount}</td>
+                <td>{el.method}</td>
+                <td>{el.user_id}</td>
+              </tr>
+               )
+          })}
         </tbody>
       </Table>:
        <p style={{margin:"auto",textAlign:"center",marginTop:"100px"}}>No data found</p>
