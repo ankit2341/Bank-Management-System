@@ -1,19 +1,19 @@
 const {connection}=require("./Config/database");
 const cors=require("cors");
 const express=require("express");
-// const { accountsRouter } = require("./routes/Bookings.route");
-// const { eventsRouter } = require("./routes/Events.route");
+const { accountRouter } = require("./Routes/Accounts.route");
+const { userRouter } = require("./Routes/Users.route");
 const app=express();
 app.use(express.json());
 app.use(cors({origin:"*"}));
 
-app.use("/users",usersRouter);
-app.use("/accounts",accountsRouter);
+app.use("/users",userRouter);
+app.use("/accounts",accountRouter);
 
 
 app.get("/",async(req,res)=>{
     try{
-       res.status(200).send("welocme to ecamp database");
+       res.status(200).send("welocme to bank database");
     }
     catch(err){
         res.status(404).send({"msg":"error connecting to api"})

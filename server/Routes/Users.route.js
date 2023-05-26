@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { UserModel } = require("../Model/Users.model");
-const jwt_decode = require("jwt-decode");
 
 const userRouter = express.Router();
 
@@ -30,6 +29,7 @@ userRouter.post("/register", async (req, res) => {
           const user = new UserModel({
             email,
             password: secured_pass,
+            funds: 0,
             role,
           });
           await user.save();
@@ -56,6 +56,7 @@ userRouter.post("/login", async (req, res) => {
             token: token,
             username: user[0].email,
             id: user[0]._id,
+            funds: user[0].funds,
           });
         } else {
           res.status(404).send({ msg: "wrongcred" });
@@ -65,6 +66,54 @@ userRouter.post("/login", async (req, res) => {
       res.status(200).send({ msg: "newuser" });
     }
   } catch (err) {
+    res.status(404).send({ msg: "404 error" });
+  }
+});
+
+userRouter.patch("/:id", async (req, res) => {
+  const id = req.params.id;
+  const payload = req.body;
+
+  try {
+    await UserModel.findByIdAndUpdate({ _id: id }, payload);
+    res.status(200).send({ msg: "updated" });
+  } catch (err) {
+    res.status(404).send({ msg: "404 eror" });
+  }
+});
+
+userRouter.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    await UserModel.findByIdAndDelete({ _id: id });
+    res.send({ msg: "user deleted" });
+  } catch (err) {
+    res.status(404).send({ msg: "404 error" });
+  }
+});
+
+userRouter.get("/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const users = await UserModel.find({ _id: id });
+    res.status(200).send(users);
+  } catch (err) {
+    res.status(404).send({ msg: "404 error" });
+  }
+});
+
+//   userRouter.use(auth);
+
+userRouter.get("/checkrole/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = await UserModel.find({ _id: id });
+    if (user[0].role == "banker") {
+      res.status(200).send({ msg: "Welcome banker" });
+    } else {
+      res.status(404).send({ msg: "Not Authorized" });
+    }
+  } catch (error) {
     res.status(404).send({ msg: "404 error" });
   }
 });
