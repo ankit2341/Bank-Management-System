@@ -4,20 +4,64 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router-dom";
+import Spinner from "react-bootstrap/esm/Spinner";
+import { toast } from "react-toastify";
+import Table from "react-bootstrap/Table";
 
 const Traansactions = () => {
   const [userData, setUserData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const userdata = useSelector((store) => store.AuthReducer.userData);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
+  const [accountsData, setAccountsData] = useState([]);
 
   useEffect(() => {
-    if(userdata===""){
-      return navigate("/")
+    if (userdata === "") {
+      toast.error("Not Authorized");
+      return navigate("/");
+    }
+    if (userdata.role !== "customer") {
+      toast.error("Not Authorized");
+      return navigate("/accounts");
     }
     setLoading(true);
-    fetch(`${import.meta.env.VITE_SOME_KEY}users/${userdata.id}`)
+    fetch(`${import.meta.env.VITE_SOME_KEY}accounts`, {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `${userdata.token}`,
+      },
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((res) => {
+        const data = res.filter((el) => {
+          return el.user_id === userdata.id;
+        });
+        setAccountsData(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setAccountsData([]);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (userdata === "") {
+      return navigate("/");
+    }
+    setLoading(true);
+    fetch(`${import.meta.env.VITE_SOME_KEY}users/${userdata.id}`, {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `${userdata.token}`,
+      },
+    })
       .then((res) => {
         return res.json();
       })
@@ -30,7 +74,7 @@ const Traansactions = () => {
         setUserData([]);
         setLoading(false);
       });
-  }, [amount]);
+  }, []);
 
   const addData = (method) => {
     const date = new Date();
@@ -41,12 +85,11 @@ const Traansactions = () => {
       method: method,
       user_id: userdata.id,
     };
-    console.log(payload);
     fetch(`${import.meta.env.VITE_SOME_KEY}accounts/`, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
-        "Authorization": `${userdata.token}`,
+        Authorization: `${userdata.token}`,
       },
       body: JSON.stringify(payload),
     })
@@ -54,26 +97,25 @@ const Traansactions = () => {
         return res.json();
       })
       .then((res) => {
-        console.log(res);
         window.location.reload();
-        alert("Prccessed successfully");
+        toast.success("Prccessed successfully");
       })
       .catch((err) => {
         console.log(err);
-        alert("error in processing");
+        toast.error("error in processing");
       });
   };
 
   const handlewihtdraw = () => {
     if (amount > userData.funds) {
-      alert("Insufficient Funds");
+      toast.warn("Insufficient Funds");
     } else {
       const payload = { funds: Number(userData.funds) - Number(amount) };
       fetch(`${import.meta.env.VITE_SOME_KEY}users/${userdata.id}`, {
         method: "PATCH",
         headers: {
           "Content-type": "application/json",
-          "Authorization": `${userdata.token}`,
+          Authorization: `${userdata.token}`,
         },
         body: JSON.stringify(payload),
       })
@@ -82,11 +124,11 @@ const Traansactions = () => {
         })
         .then((res) => {
           addData("Withdrawl");
-          alert("withdrwal success");
+          toast.success("withdrwal success");
         })
         .catch((err) => {
           console.log(err);
-          alert("wrong cred");
+          toast.error("withdrawl failed");
         });
     }
   };
@@ -98,7 +140,7 @@ const Traansactions = () => {
       method: "PATCH",
       headers: {
         "Content-type": "application/json",
-        "Authorization": `${userdata.token}`,
+        Authorization: `${userdata.token}`,
       },
       body: JSON.stringify(payload),
     })
@@ -107,17 +149,40 @@ const Traansactions = () => {
       })
       .then((res) => {
         addData("Deposit");
-        alert("deposit success");
+        toast.success("Deposit success");
       })
       .catch((err) => {
         console.log(err);
-        alert("wrong cred");
+        toast.error("Deposit failed");
       });
   };
 
+  if (loading) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: "100px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Spinner variant="dark" animation="grow"></Spinner>
+      </div>
+    );
+  }
+
   return (
     <>
-      <Card style={{ width: "90%", margin: "auto", background: "#f9f9f9",marginTop:"100px" }}>
+      <Card
+        style={{
+          width: "90%",
+          margin: "auto",
+          background: "#f9f9f9",
+          marginTop: "100px",
+        }}
+      >
         <Card.Body>
           <Card.Title>{userData.email}</Card.Title>
           <Card.Text>Funds {userData.funds}</Card.Text>
@@ -140,6 +205,45 @@ const Traansactions = () => {
           </Button>
         </Card.Body>
       </Card>
+      <br />
+      {accountsData.length > 0 ? (
+        <Table
+          responsive
+          striped
+          style={{
+            width: "80%",
+            marginTop: "20px",
+            padding: "20px 20px",
+            margin: "auto",
+            marginBottom: "100px",
+          }}
+        >
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Transaction date</th>
+              <th>Amount</th>
+              <th>Method</th>
+            </tr>
+          </thead>
+          <tbody>
+            {accountsData.map((el, index) => {
+              return (
+                <tr>
+                  <td>{index + 1}</td>
+                  <td>{el.trans_date}</td>
+                  <td>{el.amount}</td>
+                  <td>{el.method}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+      ) : (
+        <p style={{ margin: "auto", textAlign: "center", marginTop: "100px" }}>
+          No data found
+        </p>
+      )}
     </>
   );
 };
