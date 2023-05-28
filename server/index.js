@@ -1,8 +1,8 @@
-const {connection}=require("./Config/database");
+const {connection}=require("./config/database");
 const cors=require("cors");
 const express=require("express");
-const { accountRouter } = require("./Routes/Accounts.route");
-const { userRouter } = require("./Routes/Users.route");
+const { accountRouter } = require("./routes/Accounts.route");
+const { userRouter } = require("./routes/Users.route");
 const app=express();
 app.use(express.json());
 app.use(cors({origin:"*"}));
