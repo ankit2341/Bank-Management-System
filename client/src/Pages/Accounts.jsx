@@ -10,7 +10,7 @@ const Accounts = () => {
   const [loading, setLoading] = useState(false);
   const userdata = useSelector((store) => store.AuthReducer.userData);
   const navigate = useNavigate();
-
+  // console.log(userdata)
   useEffect(() => {
     setLoading(true);
     fetch(`${import.meta.env.VITE_SOME_KEY}accounts`, {

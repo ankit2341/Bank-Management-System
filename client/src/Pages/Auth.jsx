@@ -37,6 +37,7 @@ const Auth = () => {
         role: role,
         funds: 0,
       };
+      // console.log(payload)
       setLoading(true);
       fetch(`${import.meta.env.VITE_SOME_KEY}users/register`, {
         method: "POST",
