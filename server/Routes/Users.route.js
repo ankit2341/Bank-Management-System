@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
+const { auth } = require("../middlewares/Authorization");
 const jwt = require("jsonwebtoken");
 const { UserModel } = require("../model/Users.model");
 
@@ -71,6 +72,8 @@ userRouter.post("/login", async (req, res) => {
   }
 });
 
+userRouter.use(auth);
+
 userRouter.patch("/:id", async (req, res) => {
   const id = req.params.id;
   const payload = req.body;
@@ -103,7 +106,6 @@ userRouter.get("/:id", async (req, res) => {
   }
 });
 
-//   userRouter.use(auth);
 
 userRouter.get("/checkrole/:id", async (req, res) => {
   const id = req.params.id;

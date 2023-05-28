@@ -3,13 +3,17 @@ const cors = require("cors");
 const express = require("express");
 const { accountRouter } = require("./routes/Accounts.route");
 const { userRouter } = require("./routes/Users.route");
+
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: "*" }));
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  next();
+});
 
 app.use("/users", userRouter);
-app.use("/accounts", accountRouter); 
-
+app.use("/accounts", accountRouter);
 
 app.get("/", async (req, res) => {
   try {
